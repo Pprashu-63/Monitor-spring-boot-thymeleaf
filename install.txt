@@ -1,0 +1,68 @@
+configure 3 ec2 instances either t2.micro or t2.medium 
+
+================================================================================================================
+
+
+on instance 1 > install and configure the spring-thymeleaf application 
+
+
+  step 1 : git clone https://github.com/Pprashu-63/spring-boot-thymeleaf.git
+
+  step 2 : cd spring-boot-thymeleaf
+
+  step 3 : mvn spring-boot:run
+
+  step 4 : access the application as ip:8080/tutorials
+
+  step 5 : install node-expoter 
+            
+          follow this document for installation : https://developer.couchbase.com/tutorial-node-exporter-setup 
+        
+ step 6 : access the scrape metrics at http://ip:9200/metric
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+on instance 2 > install and configure prometheus 
+
+step 1 : wget https://github.com/prometheus/prometheus/releases/download/v2.47.0/prometheus-2.47.0.linux-amd64.tar.gz 
+
+step 2 : cd prometheus-2.47.0.linux-amd64 
+
+step 3 : configure node_exporter.yml file
+   
+                        global:
+                           scrape_interval: 15s
+
+                         scrape_configs:
+                           - job_name: node
+                                 static_configs:
+                                  - targets: ['ec-2 ip:9200']
+
+                           - job_name: 'spring-actuator'
+                             metrics_path: '/actuator/prometheus'
+                             scrape_interval: 5s
+                             static_configs:
+                              - targets: ['ec-2 ip:8080']  
+
+step 4 : run the command :  ./prometheus --config.file=exporter-config.yml
+
+step 5 : open prometheus ip:9090 and in status > targets the you can see status as up.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+on instance 3 > install and configure grafana 
+ 
+ step 1 : install grafana https://grafana.com/docs/grafana/latest/setup-grafana/installation/debian/ 
+
+ step 2 : access grafana ip:3000 
+
+ step 3 : navigate to data source under connections and click on add data source and select prometheus and place the prometheus IP and click save.
+
+ step 4 : add a new dashboard for our spring app(12900) and ec2 instance (10180)
+
+
+ -------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+ For High availability create load balancer and auto scaling group for these instances / configure Route 53 for DNS 
